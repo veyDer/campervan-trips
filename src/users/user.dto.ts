@@ -7,6 +7,8 @@ export class UserDTO {
 
     @IsNotEmpty()
     password: string
+
+    roles: string[]
 }
 
 export class UserResponse {
@@ -14,4 +16,5 @@ export class UserResponse {
     username: string;
     created_at: Date;
     token?: string;
+    roles?: string[];
 }

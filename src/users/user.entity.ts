@@ -1,7 +1,8 @@
 import { Entity, ObjectIdColumn, ObjectID, Column, CreateDateColumn, UpdateDateColumn, BeforeInsert } from "typeorm";
 import * as bcrypt from 'bcrypt'
-
 import * as jwt from 'jsonwebtoken';
+import { CONST } from 'src/shared/const';
+
 import { UserResponse } from "./user.dto";
 
 @Entity('users')
@@ -33,8 +34,14 @@ export class UserEntity {
     @Column({default: true})
     isActive: boolean
 
+    @Column('tinytext', {array: true, default: [CONST.ROLE_USER]})
+    roles: string[]
+
     @BeforeInsert()
-    async hashPassword() {
+    async beforeInsert() {
+        if (!this.roles) {
+            this.roles = [CONST.ROLE_USER]
+        }
         this.password = await bcrypt.hash(this.password, 10)
     }
 
@@ -43,8 +50,8 @@ export class UserEntity {
     }
 
     toResponseObject(showToken = true): UserResponse {
-        const {id, username, token, created_at} = this
-        const responseObject: UserResponse = { id, username, created_at }
+        const {id, username, token, created_at, roles} = this
+        const responseObject: UserResponse = { id, username, created_at, roles }
 
         if (showToken) {    
             responseObject.token = token
@@ -53,9 +60,9 @@ export class UserEntity {
     }
 
     private get token() {
-        const {id, username} = this
+        const {id, username, roles} = this
         return jwt.sign({
-            id, username
-        }, process.env.JWT_SECRET, {expiresIn: '60s'})
+            id, username, roles
+        }, process.env.JWT_SECRET, {expiresIn: '1h'})
     }
 }

@@ -9,7 +9,8 @@ export declare class UserEntity {
     firstName: string;
     lastName: string;
     isActive: boolean;
-    hashPassword(): Promise<void>;
+    roles: string[];
+    beforeInsert(): Promise<void>;
     comparePassword(attempt: string): Promise<any>;
     toResponseObject(showToken?: boolean): UserResponse;
     private get token();

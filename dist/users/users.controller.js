@@ -16,6 +16,9 @@ exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const users_service_1 = require("./users.service");
 const user_dto_1 = require("./user.dto");
+const required_role_decorator_1 = require("../shared/required-role.decorator");
+const roles_guard_1 = require("../shared/roles.guard");
+const const_1 = require("../shared/const");
 let UsersController = class UsersController {
     constructor(userService) {
         this.userService = userService;
@@ -32,6 +35,8 @@ let UsersController = class UsersController {
 };
 __decorate([
     common_1.Get(),
+    required_role_decorator_1.RequiredRole(const_1.CONST.ROLE_USER),
+    common_1.UseGuards(roles_guard_1.RolesGuard),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)

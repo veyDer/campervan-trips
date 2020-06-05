@@ -13,26 +13,30 @@ exports.UserEntity = void 0;
 const typeorm_1 = require("typeorm");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const const_1 = require("../shared/const");
 let UserEntity = class UserEntity {
-    async hashPassword() {
+    async beforeInsert() {
+        if (!this.roles) {
+            this.roles = [const_1.CONST.ROLE_USER];
+        }
         this.password = await bcrypt.hash(this.password, 10);
     }
     async comparePassword(attempt) {
         return await bcrypt.compare(attempt, this.password);
     }
     toResponseObject(showToken = true) {
-        const { id, username, token, created_at } = this;
-        const responseObject = { id, username, created_at };
+        const { id, username, token, created_at, roles } = this;
+        const responseObject = { id, username, created_at, roles };
         if (showToken) {
             responseObject.token = token;
         }
         return responseObject;
     }
     get token() {
-        const { id, username } = this;
+        const { id, username, roles } = this;
         return jwt.sign({
-            id, username
-        }, process.env.JWT_SECRET, { expiresIn: '60s' });
+            id, username, roles
+        }, process.env.JWT_SECRET, { expiresIn: '1h' });
     }
 };
 __decorate([
@@ -71,11 +75,15 @@ __decorate([
     __metadata("design:type", Boolean)
 ], UserEntity.prototype, "isActive", void 0);
 __decorate([
+    typeorm_1.Column('tinytext', { array: true, default: [const_1.CONST.ROLE_USER] }),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "roles", void 0);
+__decorate([
     typeorm_1.BeforeInsert(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], UserEntity.prototype, "hashPassword", null);
+], UserEntity.prototype, "beforeInsert", null);
 UserEntity = __decorate([
     typeorm_1.Entity('users')
 ], UserEntity);

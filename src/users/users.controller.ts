@@ -1,12 +1,17 @@
-import { Controller, Post, Get, Body, ValidationPipe, UsePipes } from '@nestjs/common';
+import { Controller, Post, Get, Body, ValidationPipe, UsePipes, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDTO } from './user.dto';
+import { RequiredRole } from 'src/shared/required-role.decorator';
+import { RolesGuard } from 'src/shared/roles.guard';
+import { CONST } from 'src/shared/const';
 
 @Controller('api/users')
 export class UsersController {
     constructor(private userService: UsersService) {}
 
     @Get()
+    @RequiredRole(CONST.ROLE_USER)
+    @UseGuards(RolesGuard)
     showAllUsers() {
         return this.userService.showAll(false)
     }
