@@ -1,55 +1,34 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-
-import { Repository } from 'typeorm';
-
-import { TripEntity } from './trip.entity';
-import { TripDTO } from './trip.dto';
-import { ObjectID } from 'mongodb';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { TripDocument } from './schemas/trip.schema';
+import { ConfigService } from '../config/config.service';
+import { AddTripInput } from '../graphql.classes';
 
 @Injectable()
 export class TripService {
     constructor(
-        @InjectRepository(TripEntity)
-        private tripRepository: Repository<TripEntity>
-    ){}
+        @InjectModel('Trip') private readonly tripModel: Model<TripDocument>,
+        private configService: ConfigService
+      ) {}
 
-    async create(data: TripDTO) {
-        const trip = this.tripRepository.create(data)
-        await this.tripRepository.save(trip)
+    async findAll(query: any): Promise<TripDocument[] | undefined> {
+        const trips = await this.tripModel.find(query).exec();
+        return trips;
+    }
+
+    async findOne(query: any): Promise<TripDocument | null> {
+        return await this.tripModel.findOne(query).exec()
+    }
+
+    async addTrip(data: AddTripInput): Promise<TripDocument> {
+        // replace data.users (from AddTripInput) with data.ownedBy (from TripDocument)
+        const params = {}
+        delete Object.assign(params, data, {ownedBy: data.users}).users
+        
+        const createdTrip = new this.tripModel(params);
+        const trip = await createdTrip.save()
+
         return trip
     }
-
-    async findTrip(id: string) {
-        const trip = await this.tripRepository.findOne({where: {_id: this.toObjectId(id)}})
-        if (!trip) {
-            throw new HttpException('Not found', HttpStatus.NOT_FOUND)
-        }
-        return trip
-    }
-
-    async removeTrip(id: string) {
-        await this.tripRepository.delete({id})
-        return { deleted: true }
-    }
-    
-    async showAll() {
-        return await this.tripRepository.find()
-    }
-
-    async update(id: string, data: Partial<TripDTO>) {
-        await this.tripRepository.update({id: this.toObjectId(id)}, data)
-        return await this.findTrip(id)
-    }
-
-    private toObjectId(value: string | ObjectID): ObjectID {
-        let res: (string | ObjectID)
-        try {
-            res = typeof value === 'string' ? new ObjectID(value) : value
-        } catch (error) {
-            throw new HttpException('Not found', HttpStatus.NOT_FOUND)
-        }
-        return res
-    }
-
 }

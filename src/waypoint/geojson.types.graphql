@@ -1,0 +1,8 @@
+type GeoJSONPoint {
+    type: String!
+    coordinates: [Float!]!
+}
+
+type Waypoint {
+    coords: GeoJSONPoint!
+}

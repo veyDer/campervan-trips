@@ -1,0 +1,60 @@
+scalar Date
+scalar ObjectId
+
+type Query {
+    getPostContent(post: ObjectId!, type: EContentType!): [Content!]
+    getWaypointContent(waypoint: ObjectId!, type: EContentType!): [Content!]
+}
+
+type Mutation {
+    addPostContent(post: ObjectId!, data: AddContentInput!): Content!
+    addWaypointComment(waypoint: ObjectId!, data: AddContentInput!): Content!
+    updateContent(id: ObjectId!, content: String!): Content!
+    deleteContent(id: ObjectId!): Boolean!
+}
+
+enum EContentType {
+    COMMENT,
+    PHOTO,
+    VIDEO
+}
+
+interface IContentable {
+    comments: [Content!]!
+    photos: [Content!]!
+    videos: [Content!]!
+}
+
+type Post implements IContentable {
+    comments: [Content!]!
+    photos: [Content!]!
+    videos: [Content!]!
+}
+
+type Waypoint implements IContentable {
+    comments: [Content!]!
+    photos: [Content!]!
+    videos: [Content!]!
+}
+
+
+type Content {
+    _id: ObjectId!
+    type: String!
+    content: String!
+    createdAt: Date!
+    updatedAt: Date!
+    author: User!
+}
+
+
+input AddContentInput {
+    type: EContentType!
+    content: String!
+}
+
+
+input UpdateContentInput {
+    id: ObjectId!
+    content: String!
+}

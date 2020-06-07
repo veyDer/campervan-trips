@@ -1,0 +1,41 @@
+scalar Date
+scalar ObjectId
+
+type Query {
+    trips(user: ObjectId): [Trip!]!
+}
+
+type Mutation {
+    addTrip(data: AddTripInput!): Trip!
+    updateTrip(trip: ObjectId!, data: UpdateTripInput!): Trip!
+    deleteTrip(id: ObjectId!): Boolean!
+}
+
+
+type User {
+    trips: [Trip!]!
+}
+
+type Trip {
+    _id: ObjectId!
+    name: String!
+    ownedBy: [User!]!
+    startDate: Date
+    endDate: Date
+    createdAt: Date!
+    updatedAt: Date!
+}
+
+input AddTripInput {
+    name: String!
+    users: [ObjectId!]
+    startDate: Date
+    endDate: Date
+}
+
+input UpdateTripInput {
+    name: String
+    users: [ObjectId!]
+    startDate: Date
+    endDate: Date
+}

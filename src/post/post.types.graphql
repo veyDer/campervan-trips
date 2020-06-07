@@ -1,0 +1,16 @@
+scalar Date
+scalar ObjectId
+
+type Post {
+    _id: ObjectId!
+    author: User!
+    title: String!
+    body: String!
+    createdAt: Date!
+    updatedAt: Date!
+}
+
+
+type Trip {
+    journal: [Post!]!
+}

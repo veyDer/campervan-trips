@@ -1,37 +1,48 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-
-import { HttpErrorFilter } from './shared/http-error.filter';
-import { LoggingInterceptor } from './shared/logging.interceptor';
-
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-
-import { TripModule } from './trip/trip.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { join } from 'path';
+import { ConfigModule } from './config/config.module';
+import { ConfigService } from './config/config.service';
+import { TripModule } from './trip/trip.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        const options: MongooseModuleOptions = {
+          uri: configService.mongoUri,
+          useNewUrlParser: true,
+          useCreateIndex: true,
+          useFindAndModify: false,
+          useUnifiedTopology: true,
+        };
+
+        if (configService.mongoAuthEnabled) {
+          options.user = configService.mongoUser;
+          options.pass = configService.mongoPassword;
+        }
+
+        return options;
+      },
+      inject: [ConfigService],
     }),
-    TypeOrmModule.forRoot(),
-    TripModule,
+    GraphQLModule.forRoot({
+      typePaths: ['./**/*.graphql'],
+      installSubscriptionHandlers: true,
+      context: ({ req }: any) => ({ req }),
+      definitions: {
+        path: join(process.cwd(), 'src/graphql.classes.ts'),
+        outputAs: 'class',
+      },
+    }),
     UsersModule,
-  ],
-  controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_FILTER,
-      useClass: HttpErrorFilter
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor
-    }
+    AuthModule,
+    ConfigModule,
+    TripModule,
   ],
 })
 export class AppModule {}

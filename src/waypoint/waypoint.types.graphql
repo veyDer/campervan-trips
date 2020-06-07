@@ -1,0 +1,13 @@
+scalar ObjectId
+
+type Waypoint {
+    _id: ObjectId!
+    poi: Boolean!
+    name: String
+    description: String
+    addedBy: User
+}
+
+type Trip {
+    waypoints: [Waypoint!]!
+}
