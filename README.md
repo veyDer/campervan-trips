@@ -23,6 +23,6 @@ An app to plan and record your campervan/motorhome trips around NZ & Australia
 
 ## Stack
 
+- Backend: GraphQL with Nest.js
 - Database: MongoDB
-- REST API: Nest.js
-- Frontend: HTML+CSS+jQuery for a quick proof-of-concept, then I will probably port it over to something like Ionic or React
+- Frontend: nothing yet, probably React or HTML+CSS+jQuery for a quick proof-of-concept
